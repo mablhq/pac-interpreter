@@ -44,4 +44,3 @@ jobs:
 
       - name: Publish artifacts
         run: ./gradlew publish
-
