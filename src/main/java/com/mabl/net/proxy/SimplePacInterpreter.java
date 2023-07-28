@@ -18,8 +18,12 @@ import java.util.Optional;
 
 /**
  * An interpreter for Proxy Auto-Configuration files/URLs.
+ * <p>
+ * To silence GraalVM warnings set the "polyglot.engine.WarnInterpreterOnly" system property to "false" e.g. -Dpolyglot.engine.WarnInterpreterOnly=false
+ * </p>
  *
  * @see "https://developer.mozilla.org/en-US/docs/Web/HTTP/Proxy_servers_and_tunneling/Proxy_Auto-Configuration_PAC_file"
+ * @see "https://www.graalvm.org/latest/reference-manual/js/FAQ/#warning-implementation-does-not-support-runtime-compilation"
  */
 public class SimplePacInterpreter implements PacInterpreter {
     private static final String PAC_UTILS_PATH = "/pacUtils.js";
@@ -63,9 +67,6 @@ public class SimplePacInterpreter implements PacInterpreter {
 
     private static Engine initializeEngine() {
         return Engine.newBuilder()
-                // Silence GraalVM warnings
-                // See: https://www.graalvm.org/latest/reference-manual/js/FAQ/#warning-implementation-does-not-support-runtime-compilation
-                .option("engine.WarnInterpreterOnly", "false")
                 .build();
     }
 

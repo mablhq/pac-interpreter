@@ -17,8 +17,13 @@ import java.util.function.Supplier;
  * <p>
  * After creating a {@link ReloadablePacInterpreter}, use the {@link #reload()} method to immediately reload the PAC.
  * Alternatively, use the {@link #start(Duration)} method to begin automatic reloads and the {@link #stop()} method to terminate the reload timer.
+ * </p>
+ * <p>
+ * To silence GraalVM warnings set the "polyglot.engine.WarnInterpreterOnly" system property to "false" e.g. -Dpolyglot.engine.WarnInterpreterOnly=false
+ * </p>
  *
  * @see "https://developer.mozilla.org/en-US/docs/Web/HTTP/Proxy_servers_and_tunneling/Proxy_Auto-Configuration_PAC_file"
+ * @see "https://www.graalvm.org/latest/reference-manual/js/FAQ/#warning-implementation-does-not-support-runtime-compilation"
  */
 public class ReloadablePacInterpreter implements PacInterpreter {
     private static final Logger logger = LoggerFactory.getLogger(ReloadablePacInterpreter.class);

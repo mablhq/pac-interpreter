@@ -4,6 +4,7 @@ import com.mabl.io.IoUtils;
 import io.undertow.Undertow;
 import io.undertow.util.Headers;
 import org.junit.After;
+import org.junit.Before;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -24,6 +25,11 @@ abstract public class PacInterpreterTest {
     protected static final String PAC_3 = readFromClasspath("/pac3.js");
     protected Undertow pacServer;
     private volatile String pacServerContent;
+
+    @Before
+    public void silenceGraalvmWarnings() {
+        System.setProperty("polyglot.engine.WarnInterpreterOnly", Boolean.TRUE.toString());
+    }
 
     @After
     public void tearDown() {
