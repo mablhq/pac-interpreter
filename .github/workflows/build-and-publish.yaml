@@ -39,8 +39,12 @@ jobs:
         run: |
           echo "java: $(java -version)"
 
+      - name: Extract branch name
+        shell: bash
+        run: echo "BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_ENV
+
       - name: Build and test
         run: ./gradlew test --console plain
 
       - name: Publish artifacts
-        run: ./gradlew publish
+        run: ./gradlew publish -x test -Pbranch="$BRANCH"

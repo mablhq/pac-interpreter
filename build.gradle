@@ -14,19 +14,13 @@ ext {
     baseVersion = '1.0.0'
 
     getBranch = {
-        return "${System.getenv('GITHUB_HEAD_REF') ?: ''}"
+        return project.findProperty('branch') ?: ''
     }
 
-    getUsername = {
-        return System.properties['user.name']
-    }
-
-    determineProjectVersion = { baseVersion, branch, username ->
+    determineProjectVersion = { baseVersion, branch ->
         projectVersion = baseVersion
         if (!branch.equals("main")) {
-            if (branch.isEmpty()) {
-                projectVersion = "${projectVersion}-${username}"
-            } else {
+            if (!branch.isEmpty()) {
                 projectVersion = "${projectVersion}-${branch}"
             }
             projectVersion = "${projectVersion}-SNAPSHOT"
@@ -37,7 +31,7 @@ ext {
 
 group = 'com.mabl'
 archivesBaseName = 'pac-interpreter'
-version = determineProjectVersion(baseVersion, getBranch(), getUsername())
+version = determineProjectVersion(baseVersion, getBranch())
 
 java {
     toolchain {
