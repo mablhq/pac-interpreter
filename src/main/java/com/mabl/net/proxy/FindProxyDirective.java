@@ -48,6 +48,24 @@ public class FindProxyDirective {
     }
 
     /**
+     * Tests whether this directive has connection type {@link ConnectionType#DIRECT}.
+     *
+     * @return true if this directive has a direct connection type; false otherwise.
+     */
+    public boolean isDirect() {
+        return connectionType == ConnectionType.DIRECT;
+    }
+
+    /**
+     * Tests whether this directive has connection type other than {@link ConnectionType#DIRECT}.
+     *
+     * @return true if this directive has a proxy connection type; false if the connection type is direct.
+     */
+    public boolean isProxy() {
+        return !isDirect();
+    }
+
+    /**
      * Gets the proxy and host component of the directive, e.g. "10.1.1.1:8080"
      *
      * @return the proxy:host for this directive.

@@ -3,8 +3,10 @@ package com.mabl.net.proxy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -21,20 +23,6 @@ public class FindProxyResult implements Iterable<FindProxyDirective> {
             throw new IllegalArgumentException("Directives must not be null");
         }
         this.directives = Collections.unmodifiableList(directives);
-    }
-
-    @Override
-    public Iterator<FindProxyDirective> iterator() {
-        return directives.iterator();
-    }
-
-    /**
-     * Gets the number of proxy directives contained in this result.
-     *
-     * @return the number of directives.
-     */
-    public int size() {
-        return directives.size();
     }
 
     /**
@@ -56,6 +44,17 @@ public class FindProxyResult implements Iterable<FindProxyDirective> {
     }
 
     /**
+     * Finds the first proxy directive in this result with a connection type other than {@link ConnectionType#DIRECT}.
+     *
+     * @return the first directive with a non-direct connection type, if any.
+     */
+    public Optional<FindProxyDirective> firstProxy() {
+        return directives.stream()
+                .filter(directive -> directive.connectionType() != ConnectionType.DIRECT)
+                .findFirst();
+    }
+
+    /**
      * Gets the proxy directive with the given index.
      *
      * @param index the index of the directive to retrieve (valid values: [0, size() - 1])
@@ -65,6 +64,21 @@ public class FindProxyResult implements Iterable<FindProxyDirective> {
         return directives.get(index);
     }
 
+    @Override
+    public Iterator<FindProxyDirective> iterator() {
+        return directives.iterator();
+    }
+
+    /**
+     * Creates a normalized copy of this {@link FindProxyResult} by removing all non-unique proxy directives
+     * while maintaining the original relative ordering of the directives.
+     *
+     * @return a normalized copy of this result.
+     */
+    public FindProxyResult normalize() {
+        return new FindProxyResult(new ArrayList<>(new LinkedHashSet<>(directives)));
+    }
+
     /**
      * Gets a random proxy directive from this result.
      *
@@ -72,6 +86,15 @@ public class FindProxyResult implements Iterable<FindProxyDirective> {
      */
     public FindProxyDirective random() {
         return get(random.nextInt(size()));
+    }
+
+    /**
+     * Gets the number of proxy directives contained in this result.
+     *
+     * @return the number of directives.
+     */
+    public int size() {
+        return directives.size();
     }
 
     @Override
