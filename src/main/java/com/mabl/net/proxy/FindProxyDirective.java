@@ -1,5 +1,6 @@
 package com.mabl.net.proxy;
 
+import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 public class FindProxyDirective {
     private static final String CONNECTION_TYPES_UNION = Arrays.stream(ConnectionType.values()).map(ConnectionType::name).collect(Collectors.joining("|"));
     private static final Pattern RESULT_PATTERN = Pattern.compile(String.format("(%s)(?:\\s+([^\\s;]+))?", CONNECTION_TYPES_UNION, Pattern.CASE_INSENSITIVE));
+    private static final String HOST_PORT_DELIMITER = ":";
     private final ConnectionType connectionType;
     private final Optional<String> proxyHostAndPort;
 
@@ -66,9 +68,43 @@ public class FindProxyDirective {
     }
 
     /**
+     * Get the proxy address associated with this directive.
+     *
+     * @return the proxy address, or null if the connection type is {@link ConnectionType#DIRECT}.
+     */
+    public InetSocketAddress proxyAddress() {
+        return proxyHostAndPort.map(hostAndPort -> {
+            final String[] hostPortParts = hostAndPort.split(HOST_PORT_DELIMITER);
+            final String host = hostPortParts[0];
+            final int port = Integer.parseInt(hostPortParts[1]);
+            return InetSocketAddress.createUnresolved(host, port);
+        }).orElse(null);
+    }
+
+    /**
+     * Gets the proxy host component of the directive, e.g. "192.168.1.1"
+     *
+     * @return the proxy host for this directive, or null if the connection type is {@link ConnectionType#DIRECT}.
+     */
+    public String proxyHost() {
+        return Optional.ofNullable(proxyAddress()).map(InetSocketAddress::getHostString)
+                .orElse(null);
+    }
+
+    /**
+     * Gets the proxy port component of the directive, e.g. 8080.
+     *
+     * @return the proxy port for this directive, or null if the connection type is {@link ConnectionType#DIRECT}.
+     */
+    public Integer proxyPort() {
+        return Optional.ofNullable(proxyAddress()).map(InetSocketAddress::getPort)
+                .orElse(null);
+    }
+
+    /**
      * Gets the proxy and host component of the directive, e.g. "10.1.1.1:8080"
      *
-     * @return the proxy:host for this directive.
+     * @return the proxy:host for this directive, or null if the connection type is {@link ConnectionType#DIRECT}.
      */
     public String proxyHostAndPort() {
         return proxyHostAndPort.orElse(null);
