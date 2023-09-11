@@ -49,6 +49,19 @@ public class FindProxyDirective {
         return connectionType;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FindProxyDirective that = (FindProxyDirective) o;
+        return connectionType == that.connectionType && Objects.equals(proxyHostAndPort, that.proxyHostAndPort);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(connectionType, proxyHostAndPort);
+    }
+
     /**
      * Tests whether this directive has connection type {@link ConnectionType#DIRECT}.
      *
@@ -68,33 +81,12 @@ public class FindProxyDirective {
     }
 
     /**
-     * Get the proxy address associated with this directive.
-     * <p>
-     * Note that the {@link InetSocketAddress} returned by this method is created via
-     * {@link InetSocketAddress#createUnresolved(String, int)}.  It may be necessary to create a new
-     * {@link InetSocketAddress} in order to resolve the hostname before use.
-     * <p>
-     * For example:
-     * <pre>new InetSocketAddress(address.getHostString(), address.getPort());</pre>
-     *
-     * @return the proxy address, or null if the connection type is {@link ConnectionType#DIRECT}.
-     */
-    public InetSocketAddress proxyAddress() {
-        return proxyHostAndPort.map(hostAndPort -> {
-            final String[] hostPortParts = hostAndPort.split(HOST_PORT_DELIMITER);
-            final String host = hostPortParts[0];
-            final int port = Integer.parseInt(hostPortParts[1]);
-            return InetSocketAddress.createUnresolved(host, port);
-        }).orElse(null);
-    }
-
-    /**
      * Gets the proxy host component of the directive, e.g. "192.168.1.1"
      *
      * @return the proxy host for this directive, or null if the connection type is {@link ConnectionType#DIRECT}.
      */
     public String proxyHost() {
-        return Optional.ofNullable(proxyAddress()).map(InetSocketAddress::getHostString)
+        return Optional.ofNullable(unresolvedProxyAddress()).map(InetSocketAddress::getHostString)
                 .orElse(null);
     }
 
@@ -104,7 +96,7 @@ public class FindProxyDirective {
      * @return the proxy port for this directive, or null if the connection type is {@link ConnectionType#DIRECT}.
      */
     public Integer proxyPort() {
-        return Optional.ofNullable(proxyAddress()).map(InetSocketAddress::getPort)
+        return Optional.ofNullable(unresolvedProxyAddress()).map(InetSocketAddress::getPort)
                 .orElse(null);
     }
 
@@ -117,6 +109,21 @@ public class FindProxyDirective {
         return proxyHostAndPort.orElse(null);
     }
 
+    /**
+     * Get the proxy address associated with this directive.
+     * <p>
+     * Note that if the proxy host is a hostname, it will be resolved to an IP address by this method.
+     * To create an unresolved {@link InetSocketAddress}, use {@link #unresolvedProxyAddress()} instead.
+     *
+     * @return the proxy address, or null if the connection type is {@link ConnectionType#DIRECT}.
+     * @see #unresolvedProxyAddress()
+     */
+    public InetSocketAddress resolvedProxyAddress() {
+        return Optional.ofNullable(unresolvedProxyAddress())
+                .map(unresolved -> new InetSocketAddress(unresolved.getHostString(), unresolved.getPort()))
+                .orElse(null);
+    }
+
     @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder(connectionType.name());
@@ -124,17 +131,23 @@ public class FindProxyDirective {
         return builder.toString();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        FindProxyDirective that = (FindProxyDirective) o;
-        return connectionType == that.connectionType && Objects.equals(proxyHostAndPort, that.proxyHostAndPort);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(connectionType, proxyHostAndPort);
+    /**
+     * Get the proxy address associated with this directive.
+     * <p>
+     * Note that the {@link InetSocketAddress} returned by this method is created via
+     * {@link InetSocketAddress#createUnresolved(String, int)}.  To create a resolved {@link InetSocketAddress}
+     * use {@link #resolvedProxyAddress()} instead.
+     *
+     * @return the proxy address, or null if the connection type is {@link ConnectionType#DIRECT}.
+     * @see #resolvedProxyAddress()
+     */
+    public InetSocketAddress unresolvedProxyAddress() {
+        return proxyHostAndPort.map(hostAndPort -> {
+            final String[] hostPortParts = hostAndPort.split(HOST_PORT_DELIMITER);
+            final String host = hostPortParts[0];
+            final int port = Integer.parseInt(hostPortParts[1]);
+            return InetSocketAddress.createUnresolved(host, port);
+        }).orElse(null);
     }
 
     /**

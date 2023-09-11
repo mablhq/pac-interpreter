@@ -32,9 +32,10 @@ public class FindProxyDirectiveTest {
         assertEquals("10.0.0.1:8080", directive.proxyHostAndPort());
         assertEquals("10.0.0.1", directive.proxyHost());
         assertEquals(new Integer(8080), directive.proxyPort());
-        assertEquals(InetSocketAddress.createUnresolved("10.0.0.1", 8080), directive.proxyAddress());
-        assertEquals("10.0.0.1", directive.proxyAddress().getHostString());
-        assertEquals(8080, directive.proxyAddress().getPort());
+        assertEquals(InetSocketAddress.createUnresolved("10.0.0.1", 8080), directive.unresolvedProxyAddress());
+        assertEquals(new InetSocketAddress("10.0.0.1", 8080), directive.resolvedProxyAddress());
+        assertEquals("10.0.0.1", directive.unresolvedProxyAddress().getHostString());
+        assertEquals(8080, directive.unresolvedProxyAddress().getPort());
         assertEquals("PROXY 10.0.0.1:8080", directive.toString());
         assertEquals(directive, FindProxyDirective.parse("  PROXY   10.0.0.1:8080 "));
     }
