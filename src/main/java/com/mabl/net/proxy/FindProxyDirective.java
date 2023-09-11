@@ -69,6 +69,13 @@ public class FindProxyDirective {
 
     /**
      * Get the proxy address associated with this directive.
+     * <p>
+     * Note that the {@link InetSocketAddress} returned by this method is created via
+     * {@link InetSocketAddress#createUnresolved(String, int)}.  It may be necessary to create a new
+     * {@link InetSocketAddress} in order to resolve the hostname before use.
+     * <p>
+     * For example:
+     * <pre>new InetSocketAddress(address.getHostString(), address.getPort());</pre>
      *
      * @return the proxy address, or null if the connection type is {@link ConnectionType#DIRECT}.
      */
