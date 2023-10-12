@@ -28,7 +28,7 @@ abstract public class PacInterpreterTest {
 
     @Before
     public void silenceGraalvmWarnings() {
-        System.setProperty("polyglot.engine.WarnInterpreterOnly", Boolean.TRUE.toString());
+        System.setProperty("polyglot.engine.WarnInterpreterOnly", Boolean.FALSE.toString());
     }
 
     @After

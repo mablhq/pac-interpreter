@@ -23,6 +23,10 @@ implementation group: 'com.mabl', name: 'pac-interpreter', version: '1.+'
 </dependency>
 ```
 
+### Java
+
+This library is compatible with Java 8 or newer.
+
 ## Quickstart
 
 Please see the full documentation below this example for more information.
