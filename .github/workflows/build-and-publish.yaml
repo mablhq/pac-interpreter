@@ -1,0 +1,50 @@
+name: Build and publish artifacts
+on:
+  push:
+    branches:
+      # Run on all branches (but not tags); branch builds publish snapshots
+      - '*'
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-22.04 # LTS EoL Apr 2025
+
+    env:
+      ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SONATYPE_PGP_KEY }}
+      ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SONATYPE_PGP_PASSWORD }}
+      ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_PUBLISH_USERNAME }}
+      ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PUBLISH_PASSWORD }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          java-version: '8.x'
+          java-package: jdk
+          architecture: x64
+          distribution: temurin
+
+      - uses: actions/cache@v3
+        with:
+          path: ~/.gradle
+          key: ${{ runner.OS }}-gradle-${{ hashFiles('**/build.gradle') }}
+          restore-keys: |
+            ${{ runner.OS }}-gradle-
+            ${{ runner.OS }}
+
+      - name: Install Dependencies
+        run: |
+          ./gradlew dependencies
+
+      - name: Show Versions
+        run: |
+          echo "java: $(java -version)"
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_ENV
+
+      - name: Build and test
+        run: ./gradlew test --console plain
+
+      - name: Publish artifacts
+        run: ./gradlew publish -x test -Pbranch="$BRANCH"
