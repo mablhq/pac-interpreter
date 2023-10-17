@@ -1,0 +1,46 @@
+name: Build and publish artifacts
+on:
+  push:
+    tags:
+      # Run on all tags (but not branches); releases artifact to Maven Central
+      # Note this is NOT REGEX - see https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
+      - v[0-9]+.[0-9]+.[0-9]+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-22.04 # LTS EoL Apr 2025
+
+    env:
+      ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_PUBLISH_USERNAME }}
+      ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PUBLISH_PASSWORD }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          java-version: '8.x'
+          java-package: jdk
+          architecture: x64
+          distribution: temurin
+
+      - uses: actions/cache@v3
+        with:
+          path: ~/.gradle
+          key: ${{ runner.OS }}-gradle-${{ hashFiles('**/build.gradle') }}
+          restore-keys: |
+            ${{ runner.OS }}-gradle-
+            ${{ runner.OS }}
+
+      - name: Install Dependencies
+        run: |
+          ./gradlew dependencies
+
+      - name: Show Versions
+        run: |
+          echo "java: $(java -version)"
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_ENV
+
+      - name: Close/release Nexus staging repository
+        run: ./gradlew closeAndReleaseRepository -PisTag="true"
