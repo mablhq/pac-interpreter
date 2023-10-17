@@ -305,6 +305,60 @@ Use the `gradlew` script to build locally:
 ./gradlew build
 ```
 
+## Developing
+
+### Creating `SNAPSHOT` builds
+
+`SNAPSHOT` builds are automatically created on each push to a branch other than `main` and are published to the
+Nexus [snapshot repository](https://s01.oss.sonatype.org/content/repositories/snapshots/com/mabl/pac-interpreter/).
+The `SNAPSHOT` version will be of the form `<base_version>-<branch_name>-SNAPSHOT`, e.g. `1.2.3-mybranch-SNAPSHOT`.
+
+To use one of these snapshot builds, make sure you have the Nexus snapshot repository added to your build configuration.
+For example, in Gradle you would need to add:
+
+```
+repositories {
+  maven {
+    url "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+  }
+}
+```
+
+### Staging a release
+
+__⚠️ Before merging to `main` make sure to bump `baseVersion` in [build.gradle](build.gradle)__
+
+When a change is merged to `main`, a release build will be created and pushed to the
+Nexus [staging repository](https://s01.oss.sonatype.org/content/repositories/staging/com/mabl/pac-interpreter/).
+
+The build is public but not pushed to Maven Central. You can test out the staging build by adding the staging repository
+to your build configuration. For example, in Gradle you would need to add:
+
+```
+repositories {
+  maven {
+    url "https://s01.oss.sonatype.org/content/repositories/staging/"
+  }
+}
+```
+
+### Releasing to Maven Central
+
+After verifying the staging build, the next step is to trigger the release to Maven Central. This can be done by
+executing the `./tag.sh` [script](tag.sh) in the root of the repository. This will initiate the process of releasing to
+Maven Central, but it may take some time for the release to be available and searchable there. Releases can be found in
+the Nexus [releases repository](https://s01.oss.sonatype.org/content/repositories/releases/com/mabl/pac-interpreter/).
+
+### Other Sonatype/Nexus links
+
+In addition to the repositories listed above,
+the [public repository](https://s01.oss.sonatype.org/content/repositories/public/com/mabl/pac-interpreter/)
+contains all publicly accessible `pac-interpreter` artifacts.
+
+The [Nexus Repository Manager](https://s01.oss.sonatype.org/) can be used to inspect/manage `pac-interpreter` artifacts
+interactively. It should never be necessary to interact with this UI manually as Github Workflows are set up to
+automate all common development flows (see above).
+
 ## Contributing
 
 Please feel free to file [issues](/issues) and submit [pull requests](/pulls) if you would like to contribute to this
